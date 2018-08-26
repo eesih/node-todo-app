@@ -8,6 +8,18 @@ const {ObjectID} = require('mongodb');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
+var env = process.env.NODE_ENV || 'development';
+
+console.log(`Environment: ${env}`);
+
+if(env === 'development') {
+     process.env.PORT = 3000;
+     process.env.MONGODB_URL = 'mongodb://localhost:27017/TodoApp';
+} else if(env === 'test') {
+    process.env.PORT = 3000;
+    process.env.MONGODB_URL = 'mongodb://localhost:27017/TodoAppTest';
+}
+
 var app = express();
 const port = process.env.PORT || 3000;
 
@@ -81,6 +93,22 @@ app.patch('/todos/:id', (req, res) => {
             return res.status(404).send();
         }
         return res.send({todo});
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+
+app.post('/users', (req, res) => {
+
+    var body = _.pick(req.body, ['email', 'password']);
+
+    var user = new User(body);
+  
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
     }).catch((e) => {
         res.status(400).send();
     });
