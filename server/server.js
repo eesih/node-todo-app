@@ -7,6 +7,7 @@ var {mongoose} = require('./db/mongoose');
 const {ObjectID} = require('mongodb');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var env = process.env.NODE_ENV || 'development';
 
@@ -113,6 +114,10 @@ app.post('/users', (req, res) => {
         res.status(400).send();
     });
 
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 app.listen(port, () => {
